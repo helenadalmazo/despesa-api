@@ -1,15 +1,15 @@
-from flask import Flask, jsonify
+from flask import Blueprint, current_app, jsonify
 
-app = Flask(__name__)
+app_blueprint = Blueprint("app", __name__, url_prefix="/")
 
-@app.route("/", methods=["GET"])
+@app_blueprint.route("/", methods=["GET"])
 def index():
     return jsonify(get_routes_available())
 
 def get_routes_available():
     rule_list = []
 
-    for rule in app.url_map.iter_rules():
+    for rule in current_app.url_map.iter_rules():
         path = str(rule)
 
         if path == "/static/<path:filename>":
@@ -21,6 +21,3 @@ def get_routes_available():
         })
 
     return rule_list
-
-if __name__ == "__main__":
-    app.run(debug=True)
