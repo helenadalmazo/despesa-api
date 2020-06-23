@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request
 from database.model import Expense
 from database.repository import ExpenseRepository
 from exception.exception import NotFoundException, ValidationException
+from utils import utils
 
 expense_blueprint = Blueprint("expense", __name__, url_prefix="/expense")
 
@@ -30,8 +31,8 @@ def save():
 
     params = ["name", "value"]
 
-    validate_params(json_data, params)
-    data = parse_params(json_data, params)
+    utils.validate_params(json_data, params)
+    data = utils.parse_params(json_data, params)
 
     expense = expense_repository.save(data)
     return jsonify(expense.json())
@@ -43,8 +44,8 @@ def update(id):
 
     params = ["name", "value"]
 
-    validate_params(json_data, params)
-    data = parse_params(json_data, params)
+    utils.validate_params(json_data, params)
+    data = utils.parse_params(json_data, params)
 
     expense = expense_repository.update(id, data)
     return jsonify(expense.json())
@@ -60,26 +61,6 @@ def delete(id):
     expense_repository.delete(id)
 
     return jsonify(expense.json())
-
-
-def validate_params(params_received, params_to_validate):
-    errors = []
-
-    for param in params_to_validate:
-        if param not in params_received:
-            errors.append(f"O parâmetro [{param}] é obrigatório.")
-
-    if len(errors) > 0:
-        raise ValidationException("Não foi possível processar essa requisição.", errors)
-
-
-def parse_params(params_received, params_to_parse):
-    data = {}
-
-    for param in params_to_parse:
-        data[param] = params_received[param]
-
-    return data
 
 
 @expense_blueprint.errorhandler(NotFoundException)
