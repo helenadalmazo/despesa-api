@@ -1,3 +1,5 @@
+from exception.exception import ValidationException
+
 def validate_params(params_received, params_to_validate):
     errors = []
 
