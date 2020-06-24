@@ -17,6 +17,12 @@ def create_app():
     app.register_blueprint(app_blueprint)
     app.register_blueprint(expense_blueprint)
 
+    from exception.exception import NotFoundException, ValidationException
+    from error_handler.error_handler import handle_not_found_exception, handle_validation_exception
+
+    app.register_error_handler(NotFoundException, handle_not_found_exception)
+    app.register_error_handler(ValidationException, handle_validation_exception)
+
     with app.app_context():
         if os.path.exists(database_filename) == False:
             database.create_all() 

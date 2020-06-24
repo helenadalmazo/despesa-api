@@ -2,7 +2,8 @@ from flask import Blueprint, jsonify, request
 
 from database.model import Expense
 from database.repository import ExpenseRepository
-from exception.exception import NotFoundException, ValidationException
+from exception.exception import NotFoundException
+
 from utils import utils
 
 expense_blueprint = Blueprint("expense", __name__, url_prefix="/expense")
@@ -61,13 +62,3 @@ def delete(id):
     expense_repository.delete(id)
 
     return jsonify(expense.json())
-
-
-@expense_blueprint.errorhandler(NotFoundException)
-def handle_not_found_exception(exception):
-    return jsonify({"message": exception.message}), exception.status_code
-
-
-@expense_blueprint.errorhandler(ValidationException)
-def handle_validation_exception(exception):
-    return jsonify({"message": exception.message, "errors": exception.errors}), exception.status_code
