@@ -29,7 +29,5 @@ def token_required(func):
         except Exception as e:
             return jsonify({"message": "Token inválido."}), 401
 
-        print(f"current_user {current_user}")
-
         return func(current_user=current_user, *args, **kwargs)
     return wrapper
