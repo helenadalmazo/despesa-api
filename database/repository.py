@@ -2,20 +2,23 @@ from database.database import database
 from database.model import Expense, User
 
 class ExpenseRepository():
-    def list(self):
-        return Expense.query.all()
+    def list(self, user):
+        return Expense.query.filter_by(user_id=user.id).all()
 
-    def get(self, id):
-        return Expense.query.get(id)
+    def get(self, user, id):
+        return Expense.query.filter_by(user_id=user.id, id=id).one()
 
-    def save(self, _dict):
+    def save(self, user, _dict):
         expense = Expense(**_dict)
+        expense.user_id = user.id
+
         database.session.add(expense)
         database.session.commit()
+
         return expense
 
-    def update(self, id, _dict):
-        expense = self.get(id)
+    def update(self, user, id, _dict):
+        expense = self.get(user, id)
 
         if expense:
             # Expense.query.filter_by(id=id).update(_dict)
@@ -26,10 +29,11 @@ class ExpenseRepository():
             database.session.commit()
             return expense
         else:
-            return save(_dict)
+            return save(user, _dict)
 
-    def delete(self, id):
+    def delete(self, user, id):
         expense = self.get(id)
+
         database.session.delete(expense)
         database.session.commit()
 

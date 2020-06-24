@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 
+from auth.decorator import token_required
 from database.model import Expense
 from database.repository import ExpenseRepository
 from exception.exception import NotFoundException
@@ -11,14 +12,16 @@ expense_blueprint = Blueprint("expense", __name__, url_prefix="/expense")
 expense_repository = ExpenseRepository()
 
 @expense_blueprint.route("/", methods=["GET"])
-def list():
-    expense_list = expense_repository.list()
+@token_required
+def list(current_user):
+    expense_list = expense_repository.list(current_user)
     return jsonify([expense.json() for expense in expense_list])
 
 
 @expense_blueprint.route("/<int:id>", methods=["GET"])
-def get(id):
-    expense = expense_repository.get(id)
+@token_required
+def get(current_user, id):
+    expense = expense_repository.get(current_user, id)
 
     if expense is None: 
         raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
@@ -27,7 +30,8 @@ def get(id):
 
 
 @expense_blueprint.route("/", methods=["POST"])
-def save():
+@token_required
+def save(current_user):
     json_data = request.get_json()
 
     params = ["name", "value"]
@@ -35,12 +39,13 @@ def save():
     utils.validate_params(json_data, params)
     data = utils.parse_params(json_data, params)
 
-    expense = expense_repository.save(data)
+    expense = expense_repository.save(current_user, data)
     return jsonify(expense.json())
 
 
 @expense_blueprint.route("/<int:id>", methods=["PUT"])
-def update(id):
+@token_required
+def update(current_user, id):
     json_data = request.get_json()
 
     params = ["name", "value"]
@@ -48,13 +53,14 @@ def update(id):
     utils.validate_params(json_data, params)
     data = utils.parse_params(json_data, params)
 
-    expense = expense_repository.update(id, data)
+    expense = expense_repository.update(current_user, id, data)
     return jsonify(expense.json())
 
 
 @expense_blueprint.route("/<int:id>", methods=["DELETE"])
-def delete(id):
-    expense = expense_repository.get(id)
+@token_required
+def delete(current_user, id):
+    expense = expense_repository.get(current_user, id)
 
     if expense is None: 
         raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")

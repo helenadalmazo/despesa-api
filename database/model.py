@@ -4,10 +4,12 @@ class Expense(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     name = database.Column(database.String(124), nullable=False)
     value = database.Column(database.Float, nullable=False)
+    user_id = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
 
     def json(self):
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "name": self.name,
             "value": self.value
         }
