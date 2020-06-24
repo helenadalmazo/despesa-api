@@ -12,9 +12,11 @@ def create_app():
     database.init_app(app)
 
     from blueprint.app import app_blueprint
+    from blueprint.auth import auth_blueprint
     from blueprint.expense import expense_blueprint
 
     app.register_blueprint(app_blueprint)
+    app.register_blueprint(auth_blueprint)
     app.register_blueprint(expense_blueprint)
 
     from exception.exception import NotFoundException, ValidationException

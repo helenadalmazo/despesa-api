@@ -1,8 +1,7 @@
 from database.database import database
-from database.model import Expense
+from database.model import Expense, User
 
 class ExpenseRepository():
-
     def list(self):
         return Expense.query.all()
 
@@ -33,3 +32,17 @@ class ExpenseRepository():
         expense = self.get(id)
         database.session.delete(expense)
         database.session.commit()
+
+
+class UserRepository():
+    def get(self, id):
+        return User.query.get(id)
+
+    def get_by_username(self, username):
+        return User.query.filter_by(username=username).first()
+
+    def save(self, _dict):
+        user = User(**_dict)
+        database.session.add(user)
+        database.session.commit()
+        return user
