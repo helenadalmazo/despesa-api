@@ -30,7 +30,7 @@ def signup():
     return jsonify(user.json())
 
 
-@auth_blueprint.route("/login/", methods=["POST"])
+@auth_blueprint.route("/token/", methods=["POST"])
 def login():
     json_data = request.get_json()
 
