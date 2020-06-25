@@ -20,16 +20,14 @@ class ExpenseRepository():
     def update(self, user, id, _dict):
         expense = self.get(user, id)
 
-        if expense:
-            # Expense.query.filter_by(id=id).update(_dict)
-            for key, value in _dict.items():
+        # Expense.query.filter_by(id=id).update(_dict)
+        for key, value in _dict.items():
                 if hasattr(expense, key):
                     setattr(expense, key, value)
 
-            database.session.commit()
-            return expense
-        else:
-            return save(user, _dict)
+        database.session.commit()
+
+        return expense
 
     def delete(self, user, id):
         expense = self.get(user, id)
