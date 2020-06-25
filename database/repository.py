@@ -1,12 +1,19 @@
 from database.database import database
 from database.model import Expense, Group, User
+from exception.exception import NotFoundException
 
 class ExpenseRepository():
     def list(self, user):
         return Expense.query.filter_by(user_id=user.id).all()
 
     def get(self, user, id):
-        return Expense.query.filter_by(user_id=user.id, id=id).one()
+        return Expense.query.filter_by(user_id=user.id, id=id).first()
+
+    def get_or_404(self, user, id):
+        expense = self.get(user, id)
+
+        if not expense: 
+            raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
 
     def save(self, user, _dict):
         expense = Expense(**_dict)
@@ -56,7 +63,13 @@ class GroupRepository():
         return Group.query.filter_by(user_id=user.id).all()
 
     def get(self, user, id):
-        return Group.query.filter_by(user_id=user.id, id=id).one()
+        return Group.query.filter_by(user_id=user.id, id=id).first()
+
+    def get_or_404(self, user, id):
+        group = self.get(user, id)
+
+        if not group: 
+            raise NotFoundException(f"Não foi encontrado group com identificador [{id}].")
 
     def save(self, user, _dict):
         group = Group(**_dict)

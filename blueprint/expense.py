@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify, request
 
 from auth.decorator import token_required
 from database.repository import ExpenseRepository
-from exception.exception import NotFoundException
 from utils import utils
 
 expense_blueprint = Blueprint("expense", __name__, url_prefix="/expense")
@@ -11,19 +10,17 @@ expense_repository = ExpenseRepository()
 
 @expense_blueprint.route("/", methods=["GET"])
 @token_required
-def list(current_user):
+def index(current_user):
     expense_list = expense_repository.list(current_user)
+    
     return jsonify([expense.json() for expense in expense_list])
 
 
 @expense_blueprint.route("/<int:id>", methods=["GET"])
 @token_required
 def get(current_user, id):
-    expense = expense_repository.get(current_user, id)
-
-    if expense is None: 
-        raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
-
+    expense = expense_repository.get_or_404(current_user, id)
+    
     return jsonify(expense.json())
 
 
@@ -44,10 +41,7 @@ def save(current_user):
 @expense_blueprint.route("/<int:id>", methods=["PUT"])
 @token_required
 def update(current_user, id):
-    expense = expense_repository.get(current_user, id)
-
-    if expense is None: 
-        raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
+    expense = expense_repository.get_or_404(current_user, id)
 
     json_data = request.get_json()
 
@@ -63,10 +57,7 @@ def update(current_user, id):
 @expense_blueprint.route("/<int:id>", methods=["DELETE"])
 @token_required
 def delete(current_user, id):
-    expense = expense_repository.get(current_user, id)
-
-    if expense is None: 
-        raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
+    expense = expense_repository.get_or_404(current_user, id)
 
     expense_repository.delete(current_user, id)
 

@@ -2,8 +2,6 @@ from flask import Blueprint, jsonify, request
 
 from auth.decorator import token_required
 from database.repository import GroupRepository, UserRepository
-from exception.exception import NotFoundException
-
 from utils import utils
 
 group_blueprint = Blueprint("group", __name__, url_prefix="/group")
@@ -21,10 +19,7 @@ def index(current_user):
 @group_blueprint.route("/<int:id>", methods=["GET"])
 @token_required
 def get(current_user, id):
-    group = group_repository.get(current_user, id)
-
-    if group is None: 
-        raise NotFoundException(f"Não foi encontrado grupo com identificador [{id}].")
+    group = group_repository.get_or_404(current_user, id)
 
     return jsonify(group.json())
 
@@ -44,10 +39,7 @@ def save(current_user):
 @group_blueprint.route("/<int:id>", methods=["PUT"])
 @token_required
 def update(current_user, id):
-    group = group_repository.get(current_user, id)
-
-    if group is None: 
-        raise NotFoundException(f"Não foi encontrado grupo com identificador [{id}].")
+    group = group_repository.get_or_404(current_user, id)
 
     json_data = request.get_json()
 
@@ -63,10 +55,7 @@ def update(current_user, id):
 @group_blueprint.route("/<int:id>", methods=["DELETE"])
 @token_required
 def delete(current_user, id):
-    group = group_repository.get(current_user, id)
-
-    if group is None: 
-        raise NotFoundException(f"Não foi encontrado grupo com identificador [{id}].")
+    group = group_repository.get_or_404(current_user, id)
 
     group_repository.delete(current_user, id)
 
