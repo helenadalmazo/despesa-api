@@ -1,5 +1,5 @@
 from database.database import database
-from database.model import Expense, User
+from database.model import Expense, Group, User
 
 class ExpenseRepository():
     def list(self, user):
@@ -50,3 +50,39 @@ class UserRepository():
         database.session.add(user)
         database.session.commit()
         return user
+
+
+
+class GroupRepository():
+    def list(self, user):
+        return Group.query.filter_by(user_id=user.id).all()
+
+    def get(self, user, id):
+        return Group.query.filter_by(user_id=user.id, id=id).one()
+
+    def save(self, user, _dict):
+        group = Group(**_dict)
+        group.user_id = user.id
+        group.users.append(user)
+
+        database.session.add(group)
+        database.session.commit()
+
+        return group
+
+    def update(self, user, id, _dict):
+        group = self.get(user, id)
+
+        for key, value in _dict.items():
+            if hasattr(group, key):
+                setattr(group, key, value)
+
+        database.session.commit()
+
+        return group
+
+    def delete(self, user, id):
+        group = self.get(user, id)
+
+        database.session.delete(group)
+        database.session.commit()
