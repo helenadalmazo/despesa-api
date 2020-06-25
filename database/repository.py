@@ -4,10 +4,10 @@ from exception.exception import NotFoundException
 
 class ExpenseRepository():
     def list(self, user):
-        return Expense.query.filter_by(user_id=user.id).all()
+        return Expense.query.filter_by(created_by=user.id).all()
 
     def get(self, user, id):
-        return Expense.query.filter_by(user_id=user.id, id=id).first()
+        return Expense.query.filter_by(created_by=user.id, id=id).first()
 
     def get_or_404(self, user, id):
         expense = self.get(user, id)
@@ -17,7 +17,7 @@ class ExpenseRepository():
 
     def save(self, user, _dict):
         expense = Expense(**_dict)
-        expense.user_id = user.id
+        expense.created_by = user.id
 
         database.session.add(expense)
         database.session.commit()
@@ -60,10 +60,10 @@ class UserRepository():
 
 class GroupRepository():
     def list(self, user):
-        return Group.query.filter_by(user_id=user.id).all()
+        return Group.query.filter_by(created_by=user.id).all()
 
     def get(self, user, id):
-        return Group.query.filter_by(user_id=user.id, id=id).first()
+        return Group.query.filter_by(created_by=user.id, id=id).first()
 
     def get_or_404(self, user, id):
         group = self.get(user, id)
@@ -73,7 +73,7 @@ class GroupRepository():
 
     def save(self, user, _dict):
         group = Group(**_dict)
-        group.user_id = user.id
+        group.created_by = user.id
         group.users.append(user)
 
         database.session.add(group)
