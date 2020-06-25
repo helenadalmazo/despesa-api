@@ -1,10 +1,8 @@
 from flask import Blueprint, jsonify, request
 
 from auth.decorator import token_required
-from database.model import Expense
 from database.repository import ExpenseRepository
 from exception.exception import NotFoundException
-
 from utils import utils
 
 expense_blueprint = Blueprint("expense", __name__, url_prefix="/expense")
@@ -46,6 +44,11 @@ def save(current_user):
 @expense_blueprint.route("/<int:id>", methods=["PUT"])
 @token_required
 def update(current_user, id):
+    expense = expense_repository.get(current_user, id)
+
+    if expense is None: 
+        raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
+
     json_data = request.get_json()
 
     params = ["name", "value"]
