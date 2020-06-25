@@ -22,8 +22,8 @@ class ExpenseRepository():
 
         # Expense.query.filter_by(id=id).update(_dict)
         for key, value in _dict.items():
-                if hasattr(expense, key):
-                    setattr(expense, key, value)
+            if hasattr(expense, key):
+                setattr(expense, key, value)
 
         database.session.commit()
 
