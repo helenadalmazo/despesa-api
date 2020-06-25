@@ -26,6 +26,8 @@ def token_required(func):
             token_decoded = jwt.decode(token, current_app.config.get("SECRET_KEY"))
 
             current_user = user_repository.get_by_username(token_decoded.get("username"))
+        except jwt.ExpiredSignatureError as ese:
+            return jsonify({"message": "Token expirado."}), 401
         except Exception as e:
             return jsonify({"message": "Token inválido."}), 401
 
