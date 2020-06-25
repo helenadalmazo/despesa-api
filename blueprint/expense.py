@@ -68,6 +68,6 @@ def delete(current_user, id):
     if expense is None: 
         raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
 
-    expense_repository.delete(id)
+    expense_repository.delete(current_user, id)
 
     return jsonify(expense.json())
