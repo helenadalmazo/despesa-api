@@ -32,7 +32,7 @@ class ExpenseRepository():
             return save(user, _dict)
 
     def delete(self, user, id):
-        expense = self.get(id)
+        expense = self.get(user, id)
 
         database.session.delete(expense)
         database.session.commit()
