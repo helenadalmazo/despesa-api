@@ -15,6 +15,7 @@ def parse_params(params_received, params_to_parse):
     data = {}
 
     for param in params_to_parse:
-        data[param] = params_received[param]
+        if param in params_received:
+            data[param] = params_received[param]
 
     return data
