@@ -65,5 +65,5 @@ class Group(database.Model):
             "id": self.id,
             "created_by": self.created_by,
             "name": self.name,
-            "users": [user.id for user in self.users]
+            "users": [user.json() for user in self.users]
         }
