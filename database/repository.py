@@ -83,10 +83,11 @@ class GroupRepository():
         if not group:
             raise NotFoundException(f"Não foi encontrado group com identificador [{id}].")
 
+        return group
+
     def save(self, user, _dict):
         group = Group(**_dict)
         group.created_by = user.id
-        group.users.append(user)
 
         database.session.add(group)
         database.session.commit()

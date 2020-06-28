@@ -32,6 +32,9 @@ def save(current_user):
     utils.validate_params(json_data, ["name"])
     data = utils.parse_params(json_data, ["name", "users"])
 
+    data["users"] = list(map(lambda user_id: user_repository.get(user_id), data.get("users")))
+    data["users"].append(current_user)
+
     group = group_repository.save(current_user, data)
     return jsonify(group.json())
 
@@ -47,6 +50,7 @@ def update(current_user, id):
     data = utils.parse_params(json_data, ["name", "users"])
 
     data["users"] = list(map(lambda user_id: user_repository.get(user_id), data.get("users")))
+    data["users"].append(current_user)
 
     group = group_repository.update(current_user, id, data)
     return jsonify(group.json())
@@ -59,4 +63,4 @@ def delete(current_user, id):
 
     group_repository.delete(current_user, id)
 
-    return jsonify(group.json())
+    return jsonify({ "success": True })
