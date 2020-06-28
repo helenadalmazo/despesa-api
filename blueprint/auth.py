@@ -12,7 +12,7 @@ auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 
 user_repository = UserRepository()
 
-TOKEN_LIFETIME = 10 * 60
+TOKEN_LIFETIME = 60 * 60 * 24
 
 @auth_blueprint.route("/signup/", methods=["POST"])
 def signup():
