@@ -3,14 +3,33 @@ from database.database import database
 class Expense(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     created_by = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
+    group_id = database.Column(database.Integer, database.ForeignKey("group.id"), nullable=True)
     name = database.Column(database.String(124), nullable=False)
     value = database.Column(database.Float, nullable=False)
+    items = database.relationship("ExpenseItem")
 
     def json(self):
         return {
             "id": self.id,
             "created_by": self.created_by,
+            "group_id": self.group_id,
             "name": self.name,
+            "value": self.value,
+            "items": [item.json() for item in self.items]
+        }
+
+
+class ExpenseItem(database.Model):
+    id = database.Column(database.Integer, primary_key=True)
+    expense_id = database.Column(database.Integer, database.ForeignKey("expense.id"))
+    user_id = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
+    value = database.Column(database.Float, nullable=False)
+
+    def json(self):
+        return {
+            "id": self.id,
+            "expense_id": self.expense_id,
+            "user_id": self.user_id,
             "value": self.value
         }
 
