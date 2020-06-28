@@ -1,5 +1,5 @@
 from database.database import database
-from database.model import Expense, Group, User
+from database.model import Expense, ExpenseItem, Group, User
 from exception.exception import NotFoundException
 
 class ExpenseRepository():
@@ -14,6 +14,8 @@ class ExpenseRepository():
 
         if not expense: 
             raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
+
+        return expense
 
     def save(self, user, _dict):
         expense = Expense(**_dict)
@@ -43,6 +45,16 @@ class ExpenseRepository():
         database.session.commit()
 
 
+class ExpenseItemRepository():
+    def save(self, _dict):
+        expense_item = ExpenseItem(**_dict)
+
+        database.session.add(expense_item)
+        database.session.commit()
+
+        return expense_item
+
+
 class UserRepository():
     def get(self, id):
         return User.query.get(id)
@@ -68,7 +80,7 @@ class GroupRepository():
     def get_or_404(self, user, id):
         group = self.get(user, id)
 
-        if not group: 
+        if not group:
             raise NotFoundException(f"Não foi encontrado group com identificador [{id}].")
 
     def save(self, user, _dict):
