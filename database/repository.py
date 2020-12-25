@@ -107,7 +107,7 @@ class GroupRepository:
         group = self.get(user, id)
 
         if not group:
-            raise NotFoundException(f"Não foi encontrado group com identificador [{id}].")
+            raise NotFoundException(f"Não foi encontrado grupo com identificador [{id}].")
 
         return group
 
