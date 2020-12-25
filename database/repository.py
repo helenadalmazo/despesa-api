@@ -46,6 +46,12 @@ class ExpenseRepository():
 
 
 class ExpenseItemRepository():
+    def get(self, id):
+        return Expense.query.filter_by(id=id).first()
+
+    def get_by_user(self, user):
+        return ExpenseItem.query.filter_by(user_id=user.id).first()
+
     def save(self, _dict):
         expense_item = ExpenseItem(**_dict)
 
@@ -53,6 +59,23 @@ class ExpenseItemRepository():
         database.session.commit()
 
         return expense_item
+
+    def update(self, id, _dict):
+        expense = self.get(id)
+
+        for key, value in _dict.items():
+            if hasattr(expense, key):
+                setattr(expense, key, value)
+
+        database.session.commit()
+
+        return expense
+
+    def delete(self, id):
+        expense = self.get(id)
+
+        database.session.delete(expense)
+        database.session.commit()
 
 
 class UserRepository():
