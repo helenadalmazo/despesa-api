@@ -7,6 +7,9 @@ class ExpenseRepository:
     def list(self, user):
         return Expense.query.filter_by(created_by=user.id).all()
 
+    def list_by_group(self, group):
+        return Expense.query.filter_by(group_id=group.id).all()
+
     def get(self, user, id):
         return Expense.query.filter_by(created_by=user.id, id=id).first()
 

@@ -20,6 +20,16 @@ def index(current_user):
     return jsonify([expense.json() for expense in expense_list])
 
 
+@expense_blueprint.route("/group/<int:id>", methods=["GET"])
+@token_required
+def list_by_group(current_user, id):
+    group = group_repository.get_or_404(current_user, id)
+
+    expense_list = expense_repository.list_by_group(group)
+
+    return jsonify([expense.json() for expense in expense_list])
+
+
 @expense_blueprint.route("/<int:id>", methods=["GET"])
 @token_required
 def get(current_user, id):
