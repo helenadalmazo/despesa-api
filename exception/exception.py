@@ -5,6 +5,7 @@ class NotFoundException(Exception):
         Exception.__init__(self)
         self.message = message
 
+
 class ValidationException(Exception):
     status_code = 403
     errors = []

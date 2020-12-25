@@ -9,10 +9,12 @@ group_blueprint = Blueprint("group", __name__, url_prefix="/group")
 group_repository = GroupRepository()
 user_repository = UserRepository()
 
+
 @group_blueprint.route("/", methods=["GET"])
 @token_required
 def index(current_user):
     group_list = group_repository.list(current_user)
+
     return jsonify([group.json() for group in group_list])
 
 
@@ -36,13 +38,14 @@ def save(current_user):
     data["users"].append(current_user)
 
     group = group_repository.save(current_user, data)
+
     return jsonify(group.json())
 
 
 @group_blueprint.route("/<int:id>", methods=["PUT"])
 @token_required
 def update(current_user, id):
-    group = group_repository.get_or_404(current_user, id)
+    group_repository.get_or_404(current_user, id)
 
     json_data = request.get_json()
 
@@ -59,8 +62,8 @@ def update(current_user, id):
 @group_blueprint.route("/<int:id>", methods=["DELETE"])
 @token_required
 def delete(current_user, id):
-    group = group_repository.get_or_404(current_user, id)
+    group_repository.get_or_404(current_user, id)
 
     group_repository.delete(current_user, id)
 
-    return jsonify({ "success": True })
+    return jsonify({"success": True})

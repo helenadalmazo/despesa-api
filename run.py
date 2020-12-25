@@ -3,6 +3,7 @@ import os.path
 
 from config import Config, database_filename
 
+
 def create_app():
     app = Flask(__name__)
 
@@ -28,10 +29,11 @@ def create_app():
     app.register_error_handler(ValidationException, handle_validation_exception)
 
     with app.app_context():
-        if os.path.exists(database_filename) == False:
-            database.create_all() 
+        if not os.path.exists(database_filename):
+            database.create_all()
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()

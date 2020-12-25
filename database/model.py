@@ -1,5 +1,6 @@
 from database.database import database
 
+
 class Expense(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     created_by = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)

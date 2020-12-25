@@ -14,6 +14,7 @@ user_repository = UserRepository()
 
 TOKEN_LIFETIME = 60 * 60 * 24
 
+
 @auth_blueprint.route("/signup/", methods=["POST"])
 def signup():
     json_data = request.get_json()
@@ -62,6 +63,4 @@ def login():
 @auth_blueprint.route("/me/", methods=["GET"])
 @token_required
 def me(current_user):
-    print(f"current_user {current_user}")
-
     return jsonify(current_user.json())

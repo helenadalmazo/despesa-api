@@ -11,6 +11,7 @@ expense_item_repository = ExpenseItemRepository()
 group_repository = GroupRepository()
 user_repository = UserRepository()
 
+
 @expense_blueprint.route("/", methods=["GET"])
 @token_required
 def index(current_user):

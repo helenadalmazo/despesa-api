@@ -2,9 +2,11 @@ from flask import Blueprint, current_app, jsonify
 
 app_blueprint = Blueprint("app", __name__, url_prefix="/")
 
+
 @app_blueprint.route("/", methods=["GET"])
 def index():
     return jsonify(get_routes_available())
+
 
 def get_routes_available():
     rule_list = []

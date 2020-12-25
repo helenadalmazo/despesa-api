@@ -2,7 +2,8 @@ from database.database import database
 from database.model import Expense, ExpenseItem, Group, User
 from exception.exception import NotFoundException
 
-class ExpenseRepository():
+
+class ExpenseRepository:
     def list(self, user):
         return Expense.query.filter_by(created_by=user.id).all()
 
@@ -12,7 +13,7 @@ class ExpenseRepository():
     def get_or_404(self, user, id):
         expense = self.get(user, id)
 
-        if not expense: 
+        if not expense:
             raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
 
         return expense
@@ -45,7 +46,7 @@ class ExpenseRepository():
         database.session.commit()
 
 
-class ExpenseItemRepository():
+class ExpenseItemRepository:
     def get(self, id):
         return Expense.query.filter_by(id=id).first()
 
@@ -78,7 +79,7 @@ class ExpenseItemRepository():
         database.session.commit()
 
 
-class UserRepository():
+class UserRepository:
     def get(self, id):
         return User.query.get(id)
 
@@ -92,8 +93,7 @@ class UserRepository():
         return user
 
 
-
-class GroupRepository():
+class GroupRepository:
     def list(self, user):
         return Group.query.filter_by(created_by=user.id).all()
 

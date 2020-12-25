@@ -1,13 +1,11 @@
 from flask import current_app, request, jsonify
 from functools import wraps
 import jwt
-from werkzeug.security import check_password_hash
-
-import base64
 
 from database.repository import UserRepository
 
 user_repository = UserRepository()
+
 
 def token_required(func):
     @wraps(func)
