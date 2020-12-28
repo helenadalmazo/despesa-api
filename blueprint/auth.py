@@ -32,7 +32,7 @@ def signup():
 
 
 @auth_blueprint.route("/token/", methods=["POST"])
-def login():
+def token():
     json_data = request.get_json()
 
     params = ["username", "password"]
