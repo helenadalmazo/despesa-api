@@ -19,13 +19,23 @@ TOKEN_LIFETIME = 60 * 60 * 24
 def signup():
     json_data = request.get_json()
 
-    params = ["username", "password"]
+    params = ["full_name", "username", "password", "confirm_password"]
 
     utils.validate_params(json_data, params)
     data = utils.parse_params(json_data, params)
+
+    existing_user = user_repository.get_by_username(data["username"])
+
+    # sqlalchemy.exc.IntegrityError
+    if existing_user:
+        return jsonify({"message": f"Usuário {data['username']} não está disponível."}), 409
+
+    if data["password"] != data["confirm_password"]:
+        return jsonify({"message": "As senhas não coincidem."}), 409
     
     data["password"] = generate_password_hash(data.get("password"))
 
+    del data["confirm_password"]
     user = user_repository.save(data)
 
     return jsonify(user.json())
