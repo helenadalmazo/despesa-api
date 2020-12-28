@@ -50,8 +50,7 @@ class User(database.Model):
     def json(self):
         return {
             "id": self.id,
-            "username": self.username,
-            "password": self.password
+            "username": self.username
         }
 
 
