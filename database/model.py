@@ -46,11 +46,13 @@ class User(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     username = database.Column(database.String(124), nullable=False, unique=True)
     password = database.Column(database.String(124), nullable=False)
+    full_name = database.Column(database.String(124), nullable=False)
 
     def json(self):
         return {
             "id": self.id,
-            "username": self.username
+            "username": self.username,
+            "full_name": self.full_name
         }
 
 
