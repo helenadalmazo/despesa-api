@@ -10,7 +10,7 @@ group_repository = GroupRepository()
 user_repository = UserRepository()
 
 
-@group_blueprint.route("/", methods=["GET"])
+@group_blueprint.route("", methods=["GET"])
 @token_required
 def index(current_user):
     group_list = group_repository.list(current_user)
@@ -26,7 +26,7 @@ def get(current_user, id):
     return jsonify(group.json())
 
 
-@group_blueprint.route("/", methods=["POST"])
+@group_blueprint.route("", methods=["POST"])
 @token_required
 def save(current_user):
     json_data = request.get_json()
