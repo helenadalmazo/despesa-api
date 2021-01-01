@@ -34,8 +34,7 @@ def save(current_user):
     utils.validate_params(json_data, ["name"])
     data = utils.parse_params(json_data, ["name", "users"])
 
-    data["users"] = list(map(lambda user_id: user_repository.get(user_id), data.get("users")))
-    data["users"].append(current_user)
+    data["users"] = parse_users(current_user, data)
 
     group = group_repository.save(current_user, data)
 
@@ -52,10 +51,10 @@ def update(current_user, id):
     utils.validate_params(json_data, ["name"])
     data = utils.parse_params(json_data, ["name", "users"])
 
-    data["users"] = list(map(lambda user_id: user_repository.get(user_id), data.get("users")))
-    data["users"].append(current_user)
+    data["users"] = parse_users(current_user, data)
 
     group = group_repository.update(current_user, id, data)
+
     return jsonify(group.json())
 
 
@@ -67,3 +66,16 @@ def delete(current_user, id):
     group_repository.delete(current_user, id)
 
     return jsonify({"success": True})
+
+
+def parse_users(current_user, data):
+    user_id_list = data.get("users", [])
+    user_list = []
+
+    if user_id_list:
+        user_list.append(list(map(lambda user_id: user_repository.get(user_id), user_id_list)))
+
+    if current_user.id not in user_id_list:
+        user_list.append(current_user)
+
+    return user_list
