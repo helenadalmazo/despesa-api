@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 
 from auth.decorator import token_required
 from database.repository import GroupRepository, UserRepository
+from exception.exception import NotFoundException
 from utils import utils
 
 group_blueprint = Blueprint("group", __name__, url_prefix="/group")
@@ -66,6 +67,39 @@ def delete(current_user, id):
     group_repository.delete(current_user, id)
 
     return jsonify({"success": True})
+
+
+@group_blueprint.route("/<int:id>/adduser/<string:username>", methods=["GET"])
+@token_required
+def add_user(current_user, id, username):
+    group = group_repository.get_or_404(current_user, id)
+
+    user = user_repository.get_by_username(username)
+
+    if not user:
+        raise NotFoundException(f"Nenhum usuário encontrado.")
+
+    group.users.append(user)
+    data = {"users": group.users}
+
+    group_repository.update(current_user, id, data)
+
+    return jsonify(group.json())
+
+
+@group_blueprint.route("/<int:id>/removeuser/<int:user_id>", methods=["GET"])
+@token_required
+def remove_user(current_user, id, user_id):
+    group = group_repository.get_or_404(current_user, id)
+
+    user = user_repository.get(user_id)
+
+    group.users.remove(user)
+    data = {"users": group.users}
+
+    group_repository.update(current_user, id, data)
+
+    return jsonify(group.json())
 
 
 def parse_users(current_user, data):
