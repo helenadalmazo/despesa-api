@@ -86,6 +86,14 @@ class UserRepository:
     def get(self, id):
         return User.query.get(id)
 
+    def get_or_404(self, id):
+        user = self.get(id)
+
+        if not user:
+            raise NotFoundException(f"Não foi encontrado usuário com identificador [{id}].")
+
+        return user
+
     def get_by_username(self, username):
         return User.query.filter_by(username=username).first()
 
