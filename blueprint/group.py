@@ -107,7 +107,7 @@ def parse_users(current_user, data):
     user_list = []
 
     if user_id_list:
-        user_list.append(list(map(lambda user_id: user_repository.get(user_id), user_id_list)))
+        user_list.append(list(map(lambda user_id: user_repository.get_or_404(user_id), user_id_list)))
 
     if current_user.id not in user_id_list:
         user_list.append(current_user)
