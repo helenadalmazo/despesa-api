@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, request
 
 from auth.decorator import token_required
 from database.repository import ExpenseRepository, ExpenseItemRepository, GroupRepository, UserRepository
+from exception.exception import BusinessException
+from transactional.decorator import transactional
 from utils import utils
 
 expense_blueprint = Blueprint("expense", __name__, url_prefix="/expense")
@@ -40,14 +42,24 @@ def get(current_user, id):
 
 @expense_blueprint.route("/", methods=["POST"])
 @token_required
+@transactional
 def save(current_user):
     json_data = request.get_json()
 
-    utils.validate_params(json_data, ["name", "value"])
-    data = utils.parse_params(json_data, ["name", "value", "group_id"])
+    utils.validate_params(json_data, ["group_id", "name", "value"])
+    data = utils.parse_params(json_data, ["group_id", "name", "value", "items"])
+
+    data_items = []
+
+    if "items" in data:
+        utils.validate_params(data, ["user_id", "value"], "items")
+        data_items = data.pop("items")
+
+        if data["value"] != sum(data_item["value"] for data_item in data_items):
+            raise BusinessException("A soma dos valores dos items não equivale ao total da despesa.")
 
     expense = expense_repository.save(current_user, data)
-    save_items(expense)
+    save_items(current_user, expense, data_items)
 
     return jsonify(expense.json())
 
@@ -59,13 +71,18 @@ def update(current_user, id):
 
     json_data = request.get_json()
 
-    params = ["name", "value"]
+    data = utils.parse_params(json_data, ["name", "value", "items"])
+    data_items = []
 
-    utils.validate_params(json_data, params)
-    data = utils.parse_params(json_data, params)
+    if "items" in data:
+        utils.validate_params(data, ["user_id", "value"], "items")
+        data_items = data.pop("items")
+
+        if data["value"] != sum(data_item["value"] for data_item in data_items):
+            raise BusinessException("A soma dos valores dos não equivale ao total da despesa.")
 
     expense = expense_repository.update(current_user, id, data)
-    update_items(expense)
+    update_items(current_user, expense, data_items)
 
     return jsonify(expense.json())
 
@@ -75,46 +92,69 @@ def update(current_user, id):
 def delete(current_user, id):
     expense = expense_repository.get_or_404(current_user, id)
 
+    delete_items(expense)
     expense_repository.delete(current_user, id)
 
     return jsonify({ "success": True })
 
 
-def save_items(expense):
-    user = user_repository.get(expense.created_by)
-    group = group_repository.get(user, expense.group_id)
+def save_items(current_user, expense, data_items):
+    value = None
+    users = []
 
-    splitted_value = expense.value / len(group.users)
+    if data_items:
+        value = data_items[0]["value"]
+        users = [user_repository.get_or_404(item["user_id"]) for item in data_items]
+    else:
+        group = group_repository.get(current_user, expense.group_id)
 
-    data = {
-        "expense_id": expense.id,
-        "value": splitted_value
-    }
+        value = expense.value / len(group.users)
+        users = group.users
 
-    for user in group.users:
-        data["user_id"] = user.id
+    for user in users:
+        data = {
+            "expense_id": expense.id,
+            "value": value,
+            "user_id": user.id
+        }
+
         expense_item_repository.save(data)
 
 
-def update_items(expense):
-    user = user_repository.get(expense.created_by)
-    group = group_repository.get(user, expense.group_id)
+def update_items(current_user, expense, data_items):
+    value = None
+    users = []
 
-    splitted_value = expense.value / len(group.users)
+    if data_items:
+        value = data_items[0]["value"]
+        users = [user_repository.get_or_404(item["user_id"]) for item in data_items]
+    else:
+        group = group_repository.get(current_user, expense.group_id)
 
-    data = {
-        "value": splitted_value
-    }
+        value = expense.value / len(group.users)
+        users = group.users
 
-    for user in group.users:
-        expense_item = expense_item_repository.get_by_user(user)
-        
+    for user in users:
+        expense_item = expense_item_repository.get_by_expense_and_user(expense, user)
+
+        data = {
+            "value": value
+        }
+
         if expense_item:
             expense_item_repository.update(expense_item.id, data)
         else:
             data["expense_id"] = expense.id
+            data["user_id"] = user
             expense_item_repository.save(data)
 
+    users_id = [user.id for user in users]
+
     for item in expense.items:
-        if not item.user_id in group.users:
+        if not item.user_id in users_id:
             expense_item_repository.delete(item.id)
+
+
+def delete_items(expense):
+    for item in expense.items:
+        expense_item_repository.delete(item.id)

@@ -26,7 +26,6 @@ class ExpenseRepository:
         expense.created_by = user.id
 
         database.session.add(expense)
-        database.session.commit()
 
         return expense
 
@@ -38,48 +37,41 @@ class ExpenseRepository:
             if hasattr(expense, key):
                 setattr(expense, key, value)
 
-        database.session.commit()
-
         return expense
 
     def delete(self, user, id):
         expense = self.get(user, id)
 
         database.session.delete(expense)
-        database.session.commit()
 
 
 class ExpenseItemRepository:
     def get(self, id):
-        return Expense.query.filter_by(id=id).first()
+        return ExpenseItem.query.filter_by(id=id).first()
 
-    def get_by_user(self, user):
-        return ExpenseItem.query.filter_by(user_id=user.id).first()
+    def get_by_expense_and_user(self, expense, user):
+        return ExpenseItem.query.filter_by(expense_id=expense.id, user_id=user.id).first()
 
     def save(self, _dict):
         expense_item = ExpenseItem(**_dict)
 
         database.session.add(expense_item)
-        database.session.commit()
 
         return expense_item
 
     def update(self, id, _dict):
-        expense = self.get(id)
+        expense_item = self.get(id)
 
         for key, value in _dict.items():
-            if hasattr(expense, key):
-                setattr(expense, key, value)
+            if hasattr(expense_item, key):
+                setattr(expense_item, key, value)
 
-        database.session.commit()
-
-        return expense
+        return expense_item
 
     def delete(self, id):
-        expense = self.get(id)
+        expense_item = self.get(id)
 
-        database.session.delete(expense)
-        database.session.commit()
+        database.session.delete(expense_item)
 
 
 class UserRepository:
