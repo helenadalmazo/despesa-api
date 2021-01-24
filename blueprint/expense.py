@@ -66,6 +66,7 @@ def save(current_user):
 
 @expense_blueprint.route("/<int:id>", methods=["PUT"])
 @token_required
+@transactional
 def update(current_user, id):
     expense = expense_repository.get_or_404(current_user, id)
 
@@ -89,6 +90,7 @@ def update(current_user, id):
 
 @expense_blueprint.route("/<int:id>", methods=["DELETE"])
 @token_required
+@transactional
 def delete(current_user, id):
     expense = expense_repository.get_or_404(current_user, id)
 
