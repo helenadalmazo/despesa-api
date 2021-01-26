@@ -7,6 +7,7 @@ class Expense(database.Model):
     group_id = database.Column(database.Integer, database.ForeignKey("group.id"), nullable=True)
     name = database.Column(database.String(127), nullable=False)
     value = database.Column(database.Float, nullable=False)
+    description = database.Column(database.String(255), nullable=True)
     items = database.relationship("ExpenseItem")
 
     def json(self):

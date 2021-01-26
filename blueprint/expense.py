@@ -47,7 +47,7 @@ def save(current_user):
     json_data = request.get_json()
 
     utils.validate_params(json_data, ["group_id", "name", "value"])
-    data = utils.parse_params(json_data, ["group_id", "name", "value", "items"])
+    data = utils.parse_params(json_data, ["group_id", "name", "value", "description", "items"])
 
     data_items = []
 
@@ -72,7 +72,7 @@ def update(current_user, id):
 
     json_data = request.get_json()
 
-    data = utils.parse_params(json_data, ["name", "value", "items"])
+    data = utils.parse_params(json_data, ["name", "value", "description", "items"])
     data_items = []
 
     if "items" in data:
