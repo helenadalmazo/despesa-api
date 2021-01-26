@@ -14,7 +14,7 @@ group_repository = GroupRepository()
 user_repository = UserRepository()
 
 
-@expense_blueprint.route("/", methods=["GET"])
+@expense_blueprint.route("", methods=["GET"])
 @token_required
 def index(current_user):
     expense_list = expense_repository.list(current_user)
@@ -40,7 +40,7 @@ def get(current_user, id):
     return jsonify(expense.json())
 
 
-@expense_blueprint.route("/", methods=["POST"])
+@expense_blueprint.route("", methods=["POST"])
 @token_required
 @transactional
 def save(current_user):
