@@ -5,7 +5,7 @@ class Expense(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     created_by = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
     group_id = database.Column(database.Integer, database.ForeignKey("group.id"), nullable=True)
-    name = database.Column(database.String(124), nullable=False)
+    name = database.Column(database.String(127), nullable=False)
     value = database.Column(database.Float, nullable=False)
     items = database.relationship("ExpenseItem")
 
@@ -44,9 +44,9 @@ group_users = database.Table(
 
 class User(database.Model):
     id = database.Column(database.Integer, primary_key=True)
-    username = database.Column(database.String(124), nullable=False, unique=True)
-    password = database.Column(database.String(124), nullable=False)
-    full_name = database.Column(database.String(124), nullable=False)
+    username = database.Column(database.String(127), nullable=False, unique=True)
+    password = database.Column(database.String(127), nullable=False)
+    full_name = database.Column(database.String(127), nullable=False)
 
     def json(self):
         return {
@@ -59,7 +59,7 @@ class User(database.Model):
 class Group(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     created_by = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
-    name = database.Column(database.String(124), nullable=False)
+    name = database.Column(database.String(127), nullable=False)
     users = database.relationship("User", secondary=group_users)
 
     def json(self):
