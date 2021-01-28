@@ -16,6 +16,7 @@ class Expense(database.Model):
             "created_by": self.created_by,
             "group_id": self.group_id,
             "name": self.name,
+            "description": self.description,
             "value": self.value,
             "items": [item.json() for item in self.items]
         }
