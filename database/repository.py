@@ -26,6 +26,7 @@ class ExpenseRepository:
         expense.created_by = user.id
 
         database.session.add(expense)
+        database.session.flush()
 
         return expense
 
