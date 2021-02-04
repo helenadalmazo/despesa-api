@@ -1,6 +1,10 @@
+import datetime
+
 from database.database import database
 from database.model import Expense, ExpenseItem, Group, User
 from exception.exception import NotFoundException
+from sqlalchemy.sql import func
+from sqlalchemy import extract
 
 
 class ExpenseRepository:
@@ -9,6 +13,22 @@ class ExpenseRepository:
 
     def list_by_group(self, group):
         return Expense.query.filter_by(group_id=group.id).all()
+
+    def list_value_grouped_by_user(self, group):
+        return Expense.query.\
+            filter(Expense.group_id == group.id).\
+            join(ExpenseItem).\
+            group_by(ExpenseItem.user_id).\
+            with_entities(ExpenseItem.user_id, func.sum(ExpenseItem.value).label("value")).\
+            all()
+
+    def list_value_grouped_by_year_month(self, group):
+        return Expense.query.\
+            filter(Expense.group_id == group.id).\
+            join(ExpenseItem).\
+            group_by(func.strftime("%Y-%m", Expense.date_created)).\
+            with_entities(func.strftime("%Y-%m", Expense.date_created).label("date"), func.sum(ExpenseItem.value).label("value")).\
+            all()
 
     def get(self, user, id):
         return Expense.query.filter_by(created_by=user.id, id=id).first()
@@ -24,6 +44,7 @@ class ExpenseRepository:
     def save(self, user, _dict):
         expense = Expense(**_dict)
         expense.created_by = user.id
+        expense.date_created = datetime.datetime.now()
 
         database.session.add(expense)
         database.session.flush()

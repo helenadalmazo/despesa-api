@@ -16,11 +16,13 @@ def create_app():
     from blueprint.auth import auth_blueprint
     from blueprint.group import group_blueprint
     from blueprint.expense import expense_blueprint
+    from blueprint.statistic import statistic_blueprint
 
     app.register_blueprint(app_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(group_blueprint)
     app.register_blueprint(expense_blueprint)
+    app.register_blueprint(statistic_blueprint)
 
     from exception.exception import NotFoundException, ValidationException, BusinessException
     from error_handler.error_handler import handle_not_found_exception, handle_validation_exception, handle_business_exception
