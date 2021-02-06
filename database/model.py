@@ -5,7 +5,7 @@ class Expense(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     created_by = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
     date_created = database.Column(database.DateTime, nullable=False)
-    group_id = database.Column(database.Integer, database.ForeignKey("group.id"), nullable=True)
+    group_id = database.Column(database.Integer, database.ForeignKey("group.id"), nullable=False)
     name = database.Column(database.String(127), nullable=False)
     value = database.Column(database.Float, nullable=False)
     description = database.Column(database.String(255), nullable=True)
