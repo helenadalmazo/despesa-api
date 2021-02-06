@@ -1,4 +1,13 @@
-from exception.exception import ValidationException
+from exception.exception import ForbiddenException, ValidationException
+
+
+def check_permission(user, group, permission_expected):
+    permission = group.get_user_role(user)
+
+    has_permission = permission in permission_expected
+
+    if not has_permission:
+        raise ForbiddenException()
 
 
 def validate_params(params_received, params_to_validate, key_path=None):

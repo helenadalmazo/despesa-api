@@ -1,3 +1,11 @@
+class ForbiddenException(Exception):
+    status_code = 403
+
+    def __init__(self):
+        Exception.__init__(self)
+        self.message = "Você não tem permissão."
+
+
 class NotFoundException(Exception):
     status_code = 404
 

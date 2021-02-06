@@ -1,58 +1,63 @@
 import datetime
 
 from database.database import database
-from database.model import Expense, ExpenseItem, Group, User
+from database.model import Expense, ExpenseItem, GroupUser, Group, User
 from exception.exception import NotFoundException
 from sqlalchemy.sql import func
-from sqlalchemy import extract
 
 
 class ExpenseRepository:
-    def list(self, user):
-        return Expense.query.filter_by(created_by=user.id).all()
-
-    def list_by_group(self, group):
-        return Expense.query.filter_by(group_id=group.id).all()
+    def list(self, group):
+        return Expense.query\
+            .filter(Expense.group_id == group.id)\
+            .all()
 
     def list_value_grouped_by_user(self, group):
         return Expense.query.\
+            join(ExpenseItem). \
             filter(Expense.group_id == group.id).\
-            join(ExpenseItem).\
             group_by(ExpenseItem.user_id).\
             with_entities(ExpenseItem.user_id, func.sum(ExpenseItem.value).label("value")).\
             all()
 
     def list_value_grouped_by_year_month(self, group):
         return Expense.query.\
-            filter(Expense.group_id == group.id).\
-            join(ExpenseItem).\
+            join(ExpenseItem). \
+            filter(Expense.group_id == group.id). \
             group_by(func.strftime("%Y-%m", Expense.date_created)).\
             with_entities(func.strftime("%Y-%m", Expense.date_created).label("date"), func.sum(ExpenseItem.value).label("value")).\
             all()
 
-    def get(self, user, id):
-        return Expense.query.filter_by(created_by=user.id, id=id).first()
+    def get(self, group, id):
+        filters = (
+            Expense.group_id == group.id,
+            Expense.id == id
+        )
+        return Expense.query\
+            .filter(*filters)\
+            .first()
 
-    def get_or_404(self, user, id):
-        expense = self.get(user, id)
+    def get_or_404(self, group, id):
+        expense = self.get(group, id)
 
         if not expense:
             raise NotFoundException(f"Não foi encontrada despesa com identificador [{id}].")
 
         return expense
 
-    def save(self, user, _dict):
+    def save(self, group, user, _dict):
         expense = Expense(**_dict)
         expense.created_by = user.id
         expense.date_created = datetime.datetime.now()
+        expense.group_id = group.id
 
         database.session.add(expense)
         database.session.flush()
 
         return expense
 
-    def update(self, user, id, _dict):
-        expense = self.get(user, id)
+    def update(self, group, id, _dict):
+        expense = self.get(group, id)
 
         # Expense.query.filter_by(id=id).update(_dict)
         for key, value in _dict.items():
@@ -61,8 +66,8 @@ class ExpenseRepository:
 
         return expense
 
-    def delete(self, user, id):
-        expense = self.get(user, id)
+    def delete(self, group, id):
+        expense = self.get(group, id)
 
         database.session.delete(expense)
 
@@ -72,7 +77,13 @@ class ExpenseItemRepository:
         return ExpenseItem.query.filter_by(id=id).first()
 
     def get_by_expense_and_user(self, expense, user):
-        return ExpenseItem.query.filter_by(expense_id=expense.id, user_id=user.id).first()
+        filters = (
+            ExpenseItem.expense_id == expense.id,
+            ExpenseItem.user_id == user.id
+        )
+        return ExpenseItem.query. \
+            filter(*filters) \
+            .first()
 
     def save(self, _dict):
         expense_item = ExpenseItem(**_dict)
@@ -96,6 +107,43 @@ class ExpenseItemRepository:
         database.session.delete(expense_item)
 
 
+class GroupUserRepository:
+    def get(self, group, user, id):
+        filters = (
+            GroupUser.group_id == group.id,
+            GroupUser.user_id == user.id,
+            id == id
+        )
+        return GroupUser.query\
+            .filter(*filters)\
+            .first()
+
+    def save(self, _dict):
+        group_user = GroupUser(**_dict)
+
+        database.session.add(group_user)
+        database.session.commit()
+
+        return group_user
+
+    def update(self, group, user, id, _dict):
+        group_user = self.get(group, user, id)
+
+        for key, value in _dict.items():
+            if hasattr(group_user, key):
+                setattr(group_user, key, value)
+
+        database.session.commit()
+
+        return group_user
+
+    def delete(self, group, user, id):
+        group_user = self.get(group, user, id)
+
+        database.session.delete(group_user)
+        database.session.commit()
+
+
 class UserRepository:
     def get(self, id):
         return User.query.get(id)
@@ -113,17 +161,26 @@ class UserRepository:
 
     def save(self, _dict):
         user = User(**_dict)
+
         database.session.add(user)
         database.session.commit()
+
         return user
 
 
 class GroupRepository:
     def list(self, user):
-        return Group.query.filter_by(created_by=user.id).all()
+        return Group.query\
+            .join(GroupUser)\
+            .filter(GroupUser.user_id == user.id)\
+            .all()
 
     def get(self, user, id):
-        return Group.query.filter_by(created_by=user.id, id=id).first()
+        return Group.query\
+            .join(GroupUser)\
+            .filter(GroupUser.user_id == user.id)\
+            .filter(Group.id == id) \
+            .first()
 
     def get_or_404(self, user, id):
         group = self.get(user, id)
@@ -133,17 +190,16 @@ class GroupRepository:
 
         return group
 
-    def save(self, user, _dict):
+    def save(self, _dict):
         group = Group(**_dict)
-        group.created_by = user.id
 
         database.session.add(group)
-        database.session.commit()
+        database.session.flush()
 
         return group
 
     def update(self, user, id, _dict):
-        group = self.get(user, id)
+        group = self.get_or_404(user, id)
 
         for key, value in _dict.items():
             if hasattr(group, key):
@@ -154,7 +210,7 @@ class GroupRepository:
         return group
 
     def delete(self, user, id):
-        group = self.get(user, id)
+        group = self.get_or_404(user, id)
 
         database.session.delete(group)
         database.session.commit()

@@ -1,4 +1,5 @@
 from database.database import database
+import enum
 
 
 class Expense(database.Model):
@@ -39,11 +40,23 @@ class ExpenseItem(database.Model):
         }
 
 
-group_users = database.Table(
-    "group_users",
-    database.Column("group_id", database.Integer, database.ForeignKey("group.id")),
-    database.Column("user_id", database.Integer, database.ForeignKey("user.id"))
-)
+class GroupUserRole(enum.Enum):
+    OWNER = "OWNER"
+    ADMIN = "ADMIN"
+    USER = "USER"
+
+
+class GroupUser(database.Model):
+    group_id = database.Column(database.Integer, database.ForeignKey("group.id"), primary_key=True)
+    user_id = database.Column(database.Integer, database.ForeignKey("user.id"), primary_key=True)
+    role = database.Column(database.String(127), nullable=False)
+
+    def json(self):
+        return {
+            "group_id": self.group_id,
+            "user_id": self.user_id,
+            "role": self.role
+        }
 
 
 class User(database.Model):
@@ -62,14 +75,18 @@ class User(database.Model):
 
 class Group(database.Model):
     id = database.Column(database.Integer, primary_key=True)
-    created_by = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
     name = database.Column(database.String(127), nullable=False)
-    users = database.relationship("User", secondary=group_users)
+    users = database.relationship("GroupUser")
+
+    def get_user_role(self, user):
+        for group_user in self.users:
+            if group_user.user_id == user.id:
+                return GroupUserRole(group_user.role)
+        return None
 
     def json(self):
         return {
             "id": self.id,
-            "created_by": self.created_by,
             "name": self.name,
-            "users": [user.json() for user in self.users]
+            "users": [group_user.json() for group_user in self.users]
         }

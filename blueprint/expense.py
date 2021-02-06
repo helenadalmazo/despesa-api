@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 
 from auth.decorator import token_required
+from database.model import GroupUserRole
 from database.repository import ExpenseRepository, ExpenseItemRepository, GroupRepository, UserRepository
 from exception.exception import BusinessException
 from transactional.decorator import transactional
@@ -14,40 +15,38 @@ group_repository = GroupRepository()
 user_repository = UserRepository()
 
 
-@expense_blueprint.route("", methods=["GET"])
+@expense_blueprint.route("/group/<int:group_id>", methods=["GET"])
 @token_required
-def index(current_user):
-    expense_list = expense_repository.list(current_user)
+def list(current_user, group_id):
+    group = group_repository.get_or_404(current_user, group_id)
+
+    expense_list = expense_repository.list(group)
 
     return jsonify([expense.json() for expense in expense_list])
 
 
-@expense_blueprint.route("/group/<int:id>", methods=["GET"])
+@expense_blueprint.route("/group/<int:group_id>/<int:id>", methods=["GET"])
 @token_required
-def list_by_group(current_user, id):
-    group = group_repository.get_or_404(current_user, id)
+def get(current_user, id, group_id):
+    group = group_repository.get_or_404(current_user, group_id)
 
-    expense_list = expense_repository.list_by_group(group)
-
-    return jsonify([expense.json() for expense in expense_list])
-
-
-@expense_blueprint.route("/<int:id>", methods=["GET"])
-@token_required
-def get(current_user, id):
-    expense = expense_repository.get_or_404(current_user, id)
+    expense = expense_repository.get_or_404(group, id)
 
     return jsonify(expense.json())
 
 
-@expense_blueprint.route("", methods=["POST"])
+@expense_blueprint.route("/group/<int:group_id>", methods=["POST"])
 @token_required
 @transactional
-def save(current_user):
+def save(current_user, group_id):
+    group = group_repository.get_or_404(current_user, group_id)
+
+    utils.check_permission(current_user, group, [GroupUserRole.OWNER, GroupUserRole.ADMIN])
+
     json_data = request.get_json()
 
-    utils.validate_params(json_data, ["group_id", "name", "value"])
-    data = utils.parse_params(json_data, ["group_id", "name", "value", "description", "items"])
+    utils.validate_params(json_data, ["name", "value"])
+    data = utils.parse_params(json_data, ["name", "value", "description", "items"])
 
     data_items = []
 
@@ -58,17 +57,21 @@ def save(current_user):
         if data["value"] != sum(data_item["value"] for data_item in data_items):
             raise BusinessException("A soma dos valores dos items não equivale ao total da despesa.")
 
-    expense = expense_repository.save(current_user, data)
-    save_items(current_user, expense, data_items)
+    expense = expense_repository.save(group, current_user, data)
+    save_items(expense, data_items, group)
 
     return jsonify(expense.json())
 
 
-@expense_blueprint.route("/<int:id>", methods=["PUT"])
+@expense_blueprint.route("/group/<int:group_id>/<int:id>", methods=["PUT"])
 @token_required
 @transactional
-def update(current_user, id):
-    expense = expense_repository.get_or_404(current_user, id)
+def update(current_user, id, group_id):
+    group = group_repository.get_or_404(current_user, group_id)
+
+    utils.check_permission(current_user, group, [GroupUserRole.OWNER, GroupUserRole.ADMIN])
+
+    expense = expense_repository.get_or_404(group, id)
 
     json_data = request.get_json()
 
@@ -82,25 +85,29 @@ def update(current_user, id):
         if data["value"] != sum(data_item["value"] for data_item in data_items):
             raise BusinessException("A soma dos valores dos não equivale ao total da despesa.")
 
-    expense = expense_repository.update(current_user, id, data)
-    update_items(current_user, expense, data_items)
+    expense = expense_repository.update(group, id, data)
+    update_items(expense, data_items, group)
 
     return jsonify(expense.json())
 
 
-@expense_blueprint.route("/<int:id>", methods=["DELETE"])
+@expense_blueprint.route("/group/<int:group_id>/<int:id>", methods=["DELETE"])
 @token_required
 @transactional
-def delete(current_user, id):
+def delete(current_user, id, group_id):
+    group = group_repository.get_or_404(current_user, group_id)
+
+    utils.check_permission(current_user, group, [GroupUserRole.OWNER, GroupUserRole.ADMIN])
+
     expense = expense_repository.get_or_404(current_user, id)
 
     delete_items(expense)
     expense_repository.delete(current_user, id)
 
-    return jsonify({ "success": True })
+    return jsonify({"success": True})
 
 
-def save_items(current_user, expense, data_items):
+def save_items(expense, data_items, group):
     value = None
     users = []
 
@@ -108,10 +115,8 @@ def save_items(current_user, expense, data_items):
         value = data_items[0]["value"]
         users = [user_repository.get_or_404(item["user_id"]) for item in data_items]
     else:
-        group = group_repository.get(current_user, expense.group_id)
-
         value = expense.value / len(group.users)
-        users = group.users
+        users = [user_repository.get(group_user.user_id) for group_user in group.users]
 
     for user in users:
         data = {
@@ -123,7 +128,7 @@ def save_items(current_user, expense, data_items):
         expense_item_repository.save(data)
 
 
-def update_items(current_user, expense, data_items):
+def update_items(expense, data_items, group):
     value = None
     users = []
 
@@ -131,10 +136,8 @@ def update_items(current_user, expense, data_items):
         value = data_items[0]["value"]
         users = [user_repository.get_or_404(item["user_id"]) for item in data_items]
     else:
-        group = group_repository.get(current_user, expense.group_id)
-
         value = expense.value / len(group.users)
-        users = group.users
+        users = [user_repository.get(group_user.user_id) for group_user in group.users]
 
     for user in users:
         expense_item = expense_item_repository.get_by_expense_and_user(expense, user)

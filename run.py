@@ -24,12 +24,13 @@ def create_app():
     app.register_blueprint(expense_blueprint)
     app.register_blueprint(statistic_blueprint)
 
-    from exception.exception import NotFoundException, ValidationException, BusinessException
-    from error_handler.error_handler import handle_not_found_exception, handle_validation_exception, handle_business_exception
+    from exception.exception import BusinessException, ForbiddenException, NotFoundException, ValidationException
+    from error_handler.error_handler import handle_business_exception, handle_forbidden_exception, handle_not_found_exception, handle_validation_exception
 
+    app.register_error_handler(BusinessException, handle_business_exception)
+    app.register_error_handler(ForbiddenException, handle_forbidden_exception)
     app.register_error_handler(NotFoundException, handle_not_found_exception)
     app.register_error_handler(ValidationException, handle_validation_exception)
-    app.register_error_handler(BusinessException, handle_business_exception)
 
     with app.app_context():
         if not os.path.exists(database_filename):
