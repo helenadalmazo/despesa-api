@@ -12,10 +12,12 @@ class Expense(database.Model):
     description = database.Column(database.String(255), nullable=True)
     items = database.relationship("ExpenseItem")
 
+    created_by_user = database.relationship("User")
+
     def json(self):
         return {
             "id": self.id,
-            "created_by": self.created_by,
+            "created_by": self.created_by_user.json(),
             "date_created": self.date_created.strftime("%Y-%m-%d"),
             "group_id": self.group_id,
             "name": self.name,
@@ -31,11 +33,12 @@ class ExpenseItem(database.Model):
     user_id = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
     value = database.Column(database.Float, nullable=False)
 
+    user = database.relationship("User")
+
     def json(self):
         return {
             "id": self.id,
-            "expense_id": self.expense_id,
-            "user_id": self.user_id,
+            "user": self.user.json(),
             "value": self.value
         }
 
@@ -51,10 +54,11 @@ class GroupUser(database.Model):
     user_id = database.Column(database.Integer, database.ForeignKey("user.id"), primary_key=True)
     role = database.Column(database.String(127), nullable=False)
 
+    user = database.relationship("User")
+
     def json(self):
         return {
-            "group_id": self.group_id,
-            "user_id": self.user_id,
+            "user": self.user.json(),
             "role": self.role
         }
 
