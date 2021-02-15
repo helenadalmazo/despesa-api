@@ -101,6 +101,10 @@ def add_user(current_user, id, user_id):
     group = group_repository.get_or_404(current_user, id)
     user = user_repository.get_or_404(user_id)
 
+    group_users = [user_repository.get(group_user.user_id) for group_user in group.users]
+    if user in group_users:
+        raise BusinessException("O usuário já encontra-se no grupo.")
+
     json_data = request.get_json()
 
     utils.validate_params(json_data, ["role"])
@@ -131,6 +135,11 @@ def update_user(current_user, id, user_id):
     group = group_repository.get_or_404(current_user, id)
     user = user_repository.get_or_404(user_id)
 
+    before_group_user_role = group.get_user_role(user)
+
+    if current_user == user and before_group_user_role == GroupUserRole.OWNER:
+        raise BusinessException("Você é o dono e não pode ser alterado.")
+
     json_data = request.get_json()
 
     utils.validate_params(json_data, ["role"])
@@ -160,6 +169,9 @@ def remove_user(current_user, id, user_id):
 
     group_user_role = group.get_user_role(user)
 
+    if current_user == user and group_user_role == GroupUserRole.OWNER:
+        raise BusinessException("Você é o dono e não pode ser removido.")
+
     if group_user_role == GroupUserRole.USER:
         utils.check_permission(current_user, group, [GroupUserRole.OWNER, GroupUserRole.ADMIN])
 
@@ -167,7 +179,7 @@ def remove_user(current_user, id, user_id):
         utils.check_permission(current_user, group, [GroupUserRole.OWNER])
 
     if group_user_role == GroupUserRole.OWNER:
-        raise BusinessException("Você é o dono do grupo e não pode ser removido.")
+        raise BusinessException("O grupo só pode ter um dono.")
 
     group_user_repository.delete(group, user, id)
 
