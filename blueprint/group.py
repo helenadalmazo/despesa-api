@@ -81,7 +81,21 @@ def delete(current_user, id):
     return jsonify({"success": True})
 
 
-@group_blueprint.route("/<int:id>/adduser/<int:user_id>", methods=["GET"])
+@group_blueprint.route("/<int:id>/searchnewuser", methods=["GET"])
+@token_required
+def search_new_user(current_user, id):
+    group = group_repository.get_or_404(current_user, id)
+
+    users_not_in_list = [user_repository.get(group_user.user_id) for group_user in group.users]
+
+    full_name = request.args.get("fullname")
+
+    user_list = user_repository.list_not_in_by_full_name(users_not_in_list, full_name)
+
+    return jsonify([user.json() for user in user_list])
+
+
+@group_blueprint.route("/<int:id>/adduser/<int:user_id>", methods=["POST"])
 @token_required
 def add_user(current_user, id, user_id):
     group = group_repository.get_or_404(current_user, id)
@@ -111,7 +125,7 @@ def add_user(current_user, id, user_id):
     return jsonify(group.json())
 
 
-@group_blueprint.route("/<int:id>/updateuser/<int:user_id>", methods=["GET"])
+@group_blueprint.route("/<int:id>/updateuser/<int:user_id>", methods=["PUT"])
 @token_required
 def update_user(current_user, id, user_id):
     group = group_repository.get_or_404(current_user, id)
@@ -138,7 +152,7 @@ def update_user(current_user, id, user_id):
     return jsonify(group.json())
 
 
-@group_blueprint.route("/<int:id>/removeuser/<int:user_id>", methods=["GET"])
+@group_blueprint.route("/<int:id>/removeuser/<int:user_id>", methods=["DELETE"])
 @token_required
 def remove_user(current_user, id, user_id):
     group = group_repository.get_or_404(current_user, id)
