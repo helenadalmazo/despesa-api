@@ -145,6 +145,22 @@ class GroupUserRepository:
 
 
 class UserRepository:
+    def list_not_in_by_full_name(self, users, full_name):
+        filters = [
+            User.id.notin_([user.id for user in users]),
+        ]
+
+        if full_name:
+            filters += [
+                User.full_name.startswith(full_name)
+            ]
+
+        filters = tuple(filters)
+
+        return User.query\
+            .filter(*filters)\
+            .all()
+
     def get(self, id):
         return User.query.get(id)
 
@@ -157,7 +173,9 @@ class UserRepository:
         return user
 
     def get_by_username(self, username):
-        return User.query.filter_by(username=username).first()
+        return User.query.\
+            filter(User.username == username)\
+            .first()
 
     def save(self, _dict):
         user = User(**_dict)
