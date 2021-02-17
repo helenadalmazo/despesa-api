@@ -108,11 +108,10 @@ class ExpenseItemRepository:
 
 
 class GroupUserRepository:
-    def get(self, group, user, id):
+    def get(self, group, user):
         filters = (
             GroupUser.group_id == group.id,
-            GroupUser.user_id == user.id,
-            id == id
+            GroupUser.user_id == user.id
         )
         return GroupUser.query\
             .filter(*filters)\
@@ -126,8 +125,8 @@ class GroupUserRepository:
 
         return group_user
 
-    def update(self, group, user, id, _dict):
-        group_user = self.get(group, user, id)
+    def update(self, group, user, _dict):
+        group_user = self.get(group, user)
 
         for key, value in _dict.items():
             if hasattr(group_user, key):
@@ -137,8 +136,8 @@ class GroupUserRepository:
 
         return group_user
 
-    def delete(self, group, user, id):
-        group_user = self.get(group, user, id)
+    def delete(self, group, user):
+        group_user = self.get(group, user)
 
         database.session.delete(group_user)
         database.session.commit()
@@ -227,8 +226,10 @@ class GroupRepository:
 
         return group
 
-    def delete(self, user, id):
-        group = self.get_or_404(user, id)
+    def delete(self, id):
+        group = Group.query\
+            .filter(Group.id == id)\
+            .first()
 
         database.session.delete(group)
         database.session.commit()

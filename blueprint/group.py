@@ -46,7 +46,6 @@ def save(current_user):
         "user_id": current_user.id,
         "role": GroupUserRole.OWNER.name
     }
-
     group_user_repository.save(data_group_user)
 
     return jsonify(group.json())
@@ -76,7 +75,10 @@ def delete(current_user, id):
 
     utils.check_permission(current_user, group, [GroupUserRole.OWNER])
 
-    group_repository.delete(current_user, id)
+    for group_user in group.users:
+        group_user_repository.delete(group, group_user.user)
+
+    group_repository.delete(id)
 
     return jsonify({"success": True})
 
@@ -156,7 +158,7 @@ def update_user(current_user, id, user_id):
     data["group_id"] = group.id
     data["user_id"] = user.id
 
-    group_user_repository.update(group, user, id, data)
+    group_user_repository.update(group, user, data)
 
     return jsonify(group.json())
 
