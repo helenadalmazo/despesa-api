@@ -184,25 +184,3 @@ def remove_user(current_user, id, user_id):
     group_user_repository.delete(group, user, id)
 
     return jsonify(group.json())
-
-
-# def check_permission_to_group_update(current_user, group, role):
-#     group_user_role = group.get_user_role(current_user)
-#
-#     if isinstance(role, list):
-#         return group_user_role in role
-#     else:
-#         return group_user_role == role
-#
-#
-# def check_permission_to_users_update(group_current_user_role, group_user_role):
-#     if group_current_user_role == GroupUserRole.OWNER:
-#         return True
-#
-#     if group_current_user_role == GroupUserRole.ADMIN and group_user_role == GroupUserRole.USER:
-#         return True
-#
-#     return False
-
-
-
