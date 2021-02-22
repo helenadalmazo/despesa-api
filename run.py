@@ -40,7 +40,7 @@ def create_app():
         if not os.path.exists(database_filename):
             database.create_all()
 
-    cred = credentials.Certificate("config/despesa-app-firebase-adminsdk-hkz0j-7f12ba7b1a.json")
+    cred = credentials.Certificate("config/serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
 
     return app
