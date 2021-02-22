@@ -15,3 +15,8 @@ def handle_not_found_exception(exception):
 
 def handle_validation_exception(exception):
     return jsonify({"message": exception.message, "errors": exception.errors}), exception.status_code
+
+
+def handle_exception(exception):
+    print(exception)
+    return jsonify({"message": "Ocorreu um erro interno no servidor"}), 500
