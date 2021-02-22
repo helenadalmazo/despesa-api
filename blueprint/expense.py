@@ -169,12 +169,12 @@ def delete_items(expense):
         expense_item_repository.delete(item.id)
 
 
-def notify(triggered_user, group, expense):
+def notify(trigger_user, group, expense):
     users_to_notify = [item.user for item in expense.items]
-    users_to_notify.remove(triggered_user)
+    users_to_notify.remove(trigger_user)
 
     title = group.name
-    body = f"{triggered_user.full_name} criou uma nova despesa: {expense.name}"
+    body = f"{trigger_user.full_name} criou uma nova despesa: {expense.name}"
 
     for user in users_to_notify:
         device = device_repository.get_by_user(user)
