@@ -13,8 +13,14 @@ def check_permission(user, group, permission_expected):
 def validate_params(params_received, params_to_validate, key_path=None):
     errors = []
 
+    if not params_received:
+        params_received = {}
+
     if key_path:
         params_received = params_received[key_path]
+
+    if not params_received:
+        params_received = {}
 
     if isinstance(params_received, list):
         for index, param_received in enumerate(params_received):
