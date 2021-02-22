@@ -94,3 +94,16 @@ class Group(database.Model):
             "name": self.name,
             "users": [group_user.json() for group_user in self.users]
         }
+
+
+class Device(database.Model):
+    id = database.Column(database.Integer, primary_key=True)
+    user_id = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
+    token = database.Column(database.String(127), nullable=False)
+
+    def json(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "token": self.token
+        }

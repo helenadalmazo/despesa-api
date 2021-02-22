@@ -1,7 +1,7 @@
 import datetime
 
 from database.database import database
-from database.model import Expense, ExpenseItem, GroupUser, Group, User
+from database.model import Expense, ExpenseItem, GroupUser, Group, User, Device
 from exception.exception import NotFoundException
 from sqlalchemy.sql import func
 
@@ -233,3 +233,29 @@ class GroupRepository:
 
         database.session.delete(group)
         database.session.commit()
+
+
+class DeviceRepository:
+    def get_by_user(self, user):
+        return Device.query\
+            .filter(Device.user_id == user.id)\
+            .first()
+
+    def save(self, _dict):
+        device = Device(**_dict)
+
+        database.session.add(device)
+        database.session.commit()
+
+        return device
+
+    def update(self, user, _dict):
+        group = self.get_by_user(user)
+
+        for key, value in _dict.items():
+            if hasattr(group, key):
+                setattr(group, key, value)
+
+        database.session.commit()
+
+        return group
