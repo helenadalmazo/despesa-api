@@ -1,6 +1,9 @@
 from flask import Flask
 import os.path
 
+import firebase_admin
+from firebase_admin import credentials
+
 from config import Config, database_filename
 
 
@@ -36,6 +39,9 @@ def create_app():
     with app.app_context():
         if not os.path.exists(database_filename):
             database.create_all()
+
+    cred = credentials.Certificate("config/despesa-app-firebase-adminsdk-hkz0j-7f12ba7b1a.json")
+    firebase_admin.initialize_app(cred)
 
     return app
 

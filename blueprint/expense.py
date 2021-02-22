@@ -1,8 +1,10 @@
 from flask import Blueprint, jsonify, request
 
+from firebase_admin import messaging
+
 from auth.decorator import token_required
 from database.model import GroupUserRole
-from database.repository import ExpenseRepository, ExpenseItemRepository, GroupRepository, UserRepository
+from database.repository import ExpenseRepository, ExpenseItemRepository, DeviceRepository, GroupRepository, UserRepository
 from exception.exception import BusinessException
 from transactional.decorator import transactional
 from utils import utils
@@ -11,6 +13,7 @@ expense_blueprint = Blueprint("expense", __name__, url_prefix="/expense")
 
 expense_repository = ExpenseRepository()
 expense_item_repository = ExpenseItemRepository()
+device_repository = DeviceRepository()
 group_repository = GroupRepository()
 user_repository = UserRepository()
 
@@ -59,6 +62,7 @@ def save(current_user, group_id):
 
     expense = expense_repository.save(group, current_user, data)
     save_items(expense, data_items, group)
+    notify(current_user, group, expense)
 
     return jsonify(expense.json())
 
@@ -163,3 +167,25 @@ def update_items(expense, data_items, group):
 def delete_items(expense):
     for item in expense.items:
         expense_item_repository.delete(item.id)
+
+
+def notify(triggered_user, group, expense):
+    users_to_notify = [item.user for item in expense.items]
+    users_to_notify.remove(triggered_user)
+
+    title = group.name
+    body = f"{triggered_user.full_name} criou uma nova despesa: {expense.name}"
+
+    for user in users_to_notify:
+        device = device_repository.get_by_user(user)
+
+        if device:
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=title,
+                    body=body,
+                ),
+                token=device.token
+            )
+
+            response = messaging.send(message)
