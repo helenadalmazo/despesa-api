@@ -183,6 +183,6 @@ def remove_user(current_user, id, user_id):
     if group_user_role == GroupUserRole.OWNER:
         raise BusinessException("O grupo só pode ter um dono.")
 
-    group_user_repository.delete(group, user, id)
+    group_user_repository.delete(group, user)
 
     return jsonify(group.json())
