@@ -16,7 +16,7 @@ device_repository = DeviceRepository()
 TOKEN_LIFETIME = 60 * 60 * 24
 
 
-@auth_blueprint.route("/signup/", methods=["POST"])
+@auth_blueprint.route("/signup", methods=["POST"])
 def signup():
     json_data = request.get_json()
 
@@ -42,7 +42,7 @@ def signup():
     return jsonify(user.json())
 
 
-@auth_blueprint.route("/token/", methods=["POST"])
+@auth_blueprint.route("/token", methods=["POST"])
 def token():
     json_data = request.get_json()
 
@@ -73,7 +73,7 @@ def token():
     return jsonify({"token": token.decode("utf-8"), "expires_in": TOKEN_LIFETIME})
 
 
-@auth_blueprint.route("/me/", methods=["GET"])
+@auth_blueprint.route("/me", methods=["GET"])
 @token_required
 def me(current_user):
     return jsonify(current_user.json())
