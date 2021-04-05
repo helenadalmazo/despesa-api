@@ -1,9 +1,33 @@
 import datetime
 
 from database.database import database
-from database.model import Expense, ExpenseItem, GroupUser, Group, User, Device
+from database.model import Expense, ExpenseCategory, ExpenseItem, GroupUser, Group, User, Device
 from exception.exception import NotFoundException
 from sqlalchemy.sql import func
+
+
+class ExpenseCategoryRepository:
+    def list(self):
+        return ExpenseCategory.query.all()
+
+    def get(self, id):
+        return ExpenseCategory.query.get(id)
+
+    def get_by_group_and_name(self, group, name):
+        return ExpenseCategory.query \
+            .filter(ExpenseCategory.group == group) \
+            .filter(ExpenseCategory.name == name) \
+            .all()
+
+    def save(self, group, name):
+        expense_category = ExpenseCategory()
+        expense_category.group = group
+        expense_category.name = name
+
+        database.session.add(expense_category)
+        database.session.commit()
+
+        return expense_category
 
 
 class ExpenseRepository:
@@ -18,6 +42,14 @@ class ExpenseRepository:
             filter(Expense.group_id == group.id).\
             group_by(ExpenseItem.user_id).\
             with_entities(ExpenseItem.user_id, func.sum(ExpenseItem.value).label("value")).\
+            all()
+
+    def list_value_grouped_by_category(self, group):
+        return Expense.query. \
+            join(ExpenseCategory). \
+            filter(Expense.group_id == group.id).\
+            group_by(ExpenseCategory.group).\
+            with_entities(ExpenseCategory.group, func.sum(Expense.value).label("value")).\
             all()
 
     def list_value_grouped_by_year_month(self, group):
