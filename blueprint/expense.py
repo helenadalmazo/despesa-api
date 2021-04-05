@@ -181,6 +181,9 @@ def delete_items(expense):
 def notify(trigger_user, group, expense):
     users_to_notify = [item.user for item in expense.items]
 
+    if trigger_user in users_to_notify:
+        users_to_notify.remove(trigger_user)
+
     title = group.name
     body = f"{trigger_user.full_name} criou uma nova despesa: {expense.name}"
 
