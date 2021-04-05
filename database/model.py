@@ -2,17 +2,32 @@ from database.database import database
 import enum
 
 
+class ExpenseCategory(database.Model):
+    id = database.Column(database.Integer, primary_key=True)
+    group = database.Column(database.String(127), nullable=False)
+    name = database.Column(database.String(127), nullable=False)
+
+    def json(self):
+        return {
+            "id": self.id,
+            "group": self.group,
+            "name": self.name
+        }
+
+
 class Expense(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     created_by = database.Column(database.Integer, database.ForeignKey("user.id"), nullable=False)
     date_created = database.Column(database.DateTime, nullable=False)
     group_id = database.Column(database.Integer, database.ForeignKey("group.id"), nullable=False)
+    category_id = database.Column(database.Integer, database.ForeignKey("expense_category.id"), nullable=False)
     name = database.Column(database.String(127), nullable=False)
     value = database.Column(database.Float, nullable=False)
     description = database.Column(database.String(255), nullable=True)
     items = database.relationship("ExpenseItem")
 
     created_by_user = database.relationship("User")
+    category = database.relationship("ExpenseCategory")
 
     def json(self):
         return {
@@ -20,6 +35,7 @@ class Expense(database.Model):
             "created_by": self.created_by_user.json(),
             "date_created": self.date_created.strftime("%Y-%m-%d"),
             "group_id": self.group_id,
+            "category": self.category.json(),
             "name": self.name,
             "description": self.description,
             "value": self.value,

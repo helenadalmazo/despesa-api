@@ -4,13 +4,14 @@ from firebase_admin import messaging
 
 from auth.decorator import token_required
 from database.model import GroupUserRole
-from database.repository import ExpenseRepository, ExpenseItemRepository, DeviceRepository, GroupRepository, UserRepository
+from database.repository import ExpenseCategoryRepository, ExpenseRepository, ExpenseItemRepository, DeviceRepository, GroupRepository, UserRepository
 from exception.exception import BusinessException
 from transactional.decorator import transactional
 from utils import utils
 
 expense_blueprint = Blueprint("expense", __name__, url_prefix="/expense")
 
+expense_category_repository = ExpenseCategoryRepository()
 expense_repository = ExpenseRepository()
 expense_item_repository = ExpenseItemRepository()
 device_repository = DeviceRepository()
@@ -48,8 +49,8 @@ def save(current_user, group_id):
 
     json_data = request.get_json()
 
-    utils.validate_params(json_data, ["name", "value"])
-    data = utils.parse_params(json_data, ["name", "value", "description", "items"])
+    utils.validate_params(json_data, ["name", "category_id", "value"])
+    data = utils.parse_params(json_data, ["name", "category_id", "value", "description", "items"])
 
     data_items = []
 
@@ -109,6 +110,14 @@ def delete(current_user, id, group_id):
     expense_repository.delete(current_user, id)
 
     return jsonify({"success": True})
+
+
+@expense_blueprint.route("/categories", methods=["GET"])
+@token_required
+def list_categories(current_user):
+    expense_category_list = expense_category_repository.list()
+
+    return jsonify([expense_category.json() for expense_category in expense_category_list])
 
 
 def save_items(expense, data_items, group):
@@ -171,7 +180,6 @@ def delete_items(expense):
 
 def notify(trigger_user, group, expense):
     users_to_notify = [item.user for item in expense.items]
-    users_to_notify.remove(trigger_user)
 
     title = group.name
     body = f"{trigger_user.full_name} criou uma nova despesa: {expense.name}"

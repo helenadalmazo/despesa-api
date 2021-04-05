@@ -36,9 +36,12 @@ def create_app():
     app.register_error_handler(ValidationException, handle_validation_exception)
     app.register_error_handler(Exception, handle_exception)
 
+    from database.setup import setup_data
+
     with app.app_context():
         if not os.path.exists(database_filename):
             database.create_all()
+        setup_data()
 
     cred = credentials.Certificate("config/serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
