@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 from auth.decorator import token_required
 from database.model import GroupUserRole
 from database.repository import GroupUserRepository, GroupRepository, UserRepository
-from exception.exception import BusinessException, ForbiddenException
+from exception.exception import BusinessException
 from transactional.decorator import transactional
 from utils import utils
 
