@@ -169,7 +169,7 @@ def update_items(expense, data_items, group):
             expense_item_repository.update(expense_item.id, data)
         else:
             data["expense_id"] = expense.id
-            data["user_id"] = user
+            data["user_id"] = user.id
             expense_item_repository.save(data)
 
     users_id = [user.id for user in users]
