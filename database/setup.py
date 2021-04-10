@@ -11,7 +11,7 @@ def setup_data():
             "Escola",
             "Materiais",
         ],
-        "Entretenimento e lazer": [
+        "Entretenimento": [
             "Eventos",
             "Filmes",
             "Jogos",
