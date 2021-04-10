@@ -86,7 +86,7 @@ def update(current_user, id, group_id):
 
     json_data = request.get_json()
 
-    data = utils.parse_params(json_data, ["name", "value", "description", "items"])
+    data = utils.parse_params(json_data, ["name", "category_id", "value", "description", "items"])
     data_items = []
 
     if "items" in data:
