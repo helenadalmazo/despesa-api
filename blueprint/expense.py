@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, jsonify, request
 
 from firebase_admin import messaging
@@ -24,7 +26,11 @@ user_repository = UserRepository()
 def list(current_user, group_id):
     group = group_repository.get_or_404(current_user, group_id)
 
-    expense_list = expense_repository.list(group)
+    today = datetime.now()
+    month = request.args.get("month", today.month)
+    year = request.args.get("year", today.year)
+
+    expense_list = expense_repository.list_by_month_year(group, month, year)
 
     return jsonify([expense.json() for expense in expense_list])
 
