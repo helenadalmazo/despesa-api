@@ -4,6 +4,7 @@ from database.database import database
 from database.model import Expense, ExpenseCategory, ExpenseItem, GroupUser, Group, User, Device
 from exception.exception import NotFoundException
 from sqlalchemy.sql import func
+from sqlalchemy import extract
 
 
 class ExpenseCategoryRepository:
@@ -34,6 +35,13 @@ class ExpenseRepository:
     def list(self, group):
         return Expense.query\
             .filter(Expense.group_id == group.id)\
+            .all()
+
+    def list_by_month_year(self, group, month, year):
+        return Expense.query\
+            .filter(Expense.group_id == group.id)\
+            .filter(extract("month", Expense.date_created) == month) \
+            .filter(extract("year", Expense.date_created) == year) \
             .all()
 
     def list_value_grouped_by_user(self, group):
