@@ -55,12 +55,14 @@ class ExpenseRepository:
             .all()
 
     def list_value_grouped_by_category(self, group, year, month):
-        return Expense.query. \
-            join(ExpenseCategory). \
-            filter(Expense.group_id == group.id).\
-            group_by(ExpenseCategory.group).\
-            with_entities(ExpenseCategory.group, func.sum(Expense.value).label("value")).\
-            all()
+        return Expense.query \
+            .join(ExpenseCategory) \
+            .filter(Expense.group_id == group.id) \
+            .filter(extract("year", Expense.date_created) == year) \
+            .filter(extract("month", Expense.date_created) == month) \
+            .group_by(ExpenseCategory.group) \
+            .with_entities(ExpenseCategory.group, func.sum(Expense.value).label("value")) \
+            .all()
 
     def list_value_grouped_by_year_month(self, group):
         return Expense.query.\
