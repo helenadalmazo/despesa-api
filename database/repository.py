@@ -37,22 +37,24 @@ class ExpenseRepository:
             .filter(Expense.group_id == group.id)\
             .all()
 
-    def list_by_month_year(self, group, month, year):
+    def list_by_year_month(self, group, year, month):
         return Expense.query\
-            .filter(Expense.group_id == group.id)\
-            .filter(extract("month", Expense.date_created) == month) \
+            .filter(Expense.group_id == group.id) \
             .filter(extract("year", Expense.date_created) == year) \
+            .filter(extract("month", Expense.date_created) == month) \
             .all()
 
-    def list_value_grouped_by_user(self, group):
-        return Expense.query.\
-            join(ExpenseItem). \
-            filter(Expense.group_id == group.id).\
-            group_by(ExpenseItem.user_id).\
-            with_entities(ExpenseItem.user_id, func.sum(ExpenseItem.value).label("value")).\
-            all()
+    def list_value_grouped_by_user(self, group, year, month):
+        return Expense.query\
+            .join(ExpenseItem) \
+            .filter(Expense.group_id == group.id) \
+            .filter(extract("year", Expense.date_created) == year) \
+            .filter(extract("month", Expense.date_created) == month) \
+            .group_by(ExpenseItem.user_id) \
+            .with_entities(ExpenseItem.user_id, func.sum(ExpenseItem.value).label("value")) \
+            .all()
 
-    def list_value_grouped_by_category(self, group):
+    def list_value_grouped_by_category(self, group, year, month):
         return Expense.query. \
             join(ExpenseCategory). \
             filter(Expense.group_id == group.id).\

@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify
+from datetime import datetime
+
+from flask import Blueprint, jsonify, request
 
 from auth.decorator import token_required
 from database.repository import ExpenseCategoryRepository, ExpenseRepository, GroupRepository, UserRepository
@@ -16,7 +18,11 @@ user_repository = UserRepository()
 def list_value_grouped_by_user(current_user, group_id):
     group = group_repository.get_or_404(current_user, group_id)
 
-    statistic_list = expense_repository.list_value_grouped_by_user(group)
+    today = datetime.now()
+    month = request.args.get("month", today.month)
+    year = request.args.get("year", today.year)
+
+    statistic_list = expense_repository.list_value_grouped_by_user(group, year, month)
 
     return jsonify([{"user": user_repository.get(item.user_id).json(), "value": item.value} for item in statistic_list])
 
@@ -26,7 +32,11 @@ def list_value_grouped_by_user(current_user, group_id):
 def list_value_grouped_by_category(current_user, group_id):
     group = group_repository.get_or_404(current_user, group_id)
 
-    statistic_list = expense_repository.list_value_grouped_by_category(group)
+    today = datetime.now()
+    month = request.args.get("month", today.month)
+    year = request.args.get("year", today.year)
+
+    statistic_list = expense_repository.list_value_grouped_by_category(group, year, month)
 
     return jsonify([{"group": item.group, "value": item.value} for item in statistic_list])
 
