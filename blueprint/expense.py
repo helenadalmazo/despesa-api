@@ -138,6 +138,9 @@ def balance(current_user, group_id):
 
     expense_list = expense_repository.list_by_year_month(group, year, month)
 
+    if not expense_list:
+        return jsonify({"statement": [], "balance": None, "split": []})
+
     balance_list = []
     current_user_statement_list = []
 
