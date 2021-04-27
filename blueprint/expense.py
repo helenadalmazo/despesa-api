@@ -111,10 +111,10 @@ def delete(current_user, id, group_id):
 
     utils.check_permission(current_user, group, [GroupUserRole.OWNER, GroupUserRole.ADMIN])
 
-    expense = expense_repository.get_or_404(current_user, id)
+    expense = expense_repository.get_or_404(group, id)
 
     delete_items(expense)
-    expense_repository.delete(current_user, id)
+    expense_repository.delete(group, id)
 
     return jsonify({"success": True})
 
