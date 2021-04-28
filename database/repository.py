@@ -65,12 +65,12 @@ class ExpenseRepository:
             .all()
 
     def list_value_grouped_by_year_month(self, group):
-        return Expense.query.\
-            join(ExpenseItem). \
-            filter(Expense.group_id == group.id). \
-            group_by(func.strftime("%Y-%m", Expense.date_created)).\
-            with_entities(func.strftime("%Y-%m", Expense.date_created).label("date"), func.sum(ExpenseItem.value).label("value")).\
-            all()
+        return Expense.query \
+            .join(ExpenseItem) \
+            .filter(Expense.group_id == group.id) \
+            .group_by(func.strftime("%Y-%m", Expense.date_created)) \
+            .with_entities(func.strftime("%Y-%m", Expense.date_created).label("date"), func.sum(ExpenseItem.value).label("value")) \
+            .all()
 
     def get(self, group, id):
         filters = (
@@ -125,8 +125,8 @@ class ExpenseItemRepository:
             ExpenseItem.expense_id == expense.id,
             ExpenseItem.user_id == user.id
         )
-        return ExpenseItem.query. \
-            filter(*filters) \
+        return ExpenseItem.query \
+            .filter(*filters) \
             .first()
 
     def save(self, _dict):
@@ -157,8 +157,8 @@ class GroupUserRepository:
             GroupUser.group_id == group.id,
             GroupUser.user_id == user.id
         )
-        return GroupUser.query\
-            .filter(*filters)\
+        return GroupUser.query \
+            .filter(*filters) \
             .first()
 
     def save(self, _dict):
@@ -200,8 +200,8 @@ class UserRepository:
 
         filters = tuple(filters)
 
-        return User.query\
-            .filter(*filters)\
+        return User.query \
+            .filter(*filters) \
             .all()
 
     def get(self, id):
@@ -216,8 +216,8 @@ class UserRepository:
         return user
 
     def get_by_username(self, username):
-        return User.query.\
-            filter(User.username == username)\
+        return User.query \
+            .filter(User.username == username) \
             .first()
 
     def save(self, _dict):
@@ -231,15 +231,15 @@ class UserRepository:
 
 class GroupRepository:
     def list(self, user):
-        return Group.query\
-            .join(GroupUser)\
-            .filter(GroupUser.user_id == user.id)\
+        return Group.query \
+            .join(GroupUser) \
+            .filter(GroupUser.user_id == user.id) \
             .all()
 
     def get(self, user, id):
-        return Group.query\
-            .join(GroupUser)\
-            .filter(GroupUser.user_id == user.id)\
+        return Group.query \
+            .join(GroupUser) \
+            .filter(GroupUser.user_id == user.id) \
             .filter(Group.id == id) \
             .first()
 
@@ -271,8 +271,8 @@ class GroupRepository:
         return group
 
     def delete(self, id):
-        group = Group.query\
-            .filter(Group.id == id)\
+        group = Group.query \
+            .filter(Group.id == id) \
             .first()
 
         database.session.delete(group)
@@ -281,8 +281,8 @@ class GroupRepository:
 
 class DeviceRepository:
     def get_by_user(self, user):
-        return Device.query\
-            .filter(Device.user_id == user.id)\
+        return Device.query \
+            .filter(Device.user_id == user.id) \
             .first()
 
     def save(self, _dict):
